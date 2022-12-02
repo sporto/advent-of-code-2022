@@ -27,9 +27,18 @@ main =
 
 start : Task Str Str
 start =
-    content <- readFile "day01/sample" |> Task.await
-    parsed <- parseInput content |> Task.fromResult |> Task.await
-    Task.succeed parsed
+    input <- readAndParse "day01/sample" day01Parse |> Task.await
+    result = processDay1 input
+    Task.succeed result
+
+
+Parser parsed : Str -> Result parsed Str
+
+
+readAndParse : Str, Parser parsed -> Task parsed Str
+readAndParse = \filePath, parse ->
+    content <- readFile filePath |> Task.await
+    parse content |> Task.fromResult
 
 
 readFile : Str -> Task Str Str
@@ -42,6 +51,24 @@ readFile = \filePath ->
             Ok content -> Task.succeed content
 
 
-parseInput: Str -> Result Str Str
-parseInput = \_content ->
-    Ok "parsed"
+# parseInput : Parser (List (List I16))
+# parseInput = \content ->
+#     day01Parse content
+
+
+day01Parse : Parser (List (List I16))
+day01Parse = \input ->
+    Str.split input "\n\n"
+    |> List.mapTry day01ParseBlock
+
+
+day01ParseBlock : Parser (List I16)
+day01ParseBlock = \input ->
+    Str.split input "\n"
+    |> List.mapTry Str.toI16
+    |> Result.mapErr (\_ -> "Could not parse \(input)")
+
+
+processDay1 : (List (List I16)) -> Str
+processDay1 = \_ ->
+    "Hello"
