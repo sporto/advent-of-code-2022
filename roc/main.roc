@@ -5,15 +5,10 @@ app "advent"
         pf.Stdout,
         pf.Stderr,
         pf.Task.{ Task },
-        pf.File,
-        pf.Path,
         Day01,
-        Common.{ Parser },
     ]
     provides [main] to pf
 
-# https://www.roc-lang.org/builtins/Result
-# https://www.roc-lang.org/packages/basic-cli/Task
 
 main : Task {} []
 main =
@@ -29,21 +24,5 @@ main =
 
 start : Task Str Str
 start =
-    input <- readAndParse "day01/input" Day01.parse |> Task.await
-    Day01.process input |> Task.fromResult
+    Day01.part1
 
-
-readAndParse : Str, Parser parsed -> Task parsed Str
-readAndParse = \filePath, parse ->
-    content <- readFile filePath |> Task.await
-    parse content |> Task.fromResult
-
-
-readFile : Str -> Task Str Str
-readFile = \filePath ->
-    task =
-        File.readUtf8 (Path.fromStr filePath)
-    Task.attempt task \result ->
-        when result is
-            Err _ -> Task.fail "Could not open \(filePath)"
-            Ok content -> Task.succeed content

@@ -1,27 +1,38 @@
 interface Day01
     exposes [
+        part1,
         parse,
-        process,
+        processPart1
     ]
     imports [
         Common.{ Parser },
+        pf.Task.{ Task },
     ]
 
-parse : Parser (List (List I32))
+Parsed : List (List I32)
+
+
+part1 : Task Str Str
+part1 =
+    input <- Common.readAndParse "day01/input" parse |> Task.await
+    processPart1 input |> Task.fromResult
+
+
+parse : Common.Parser Parsed
 parse = \input ->
     Str.split input "\n\n"
-    |> List.mapTry day01ParseBlock
+    |> List.mapTry parseBlock
 
 
-day01ParseBlock : Parser (List I32)
-day01ParseBlock = \input ->
+parseBlock : Parser (List I32)
+parseBlock = \input ->
     Str.split input "\n"
     |> List.mapTry Str.toI32
     |> Result.mapErr (\_ -> "Could not parse \(input)")
 
 
-process : (List (List I32)) -> Result Str Str
-process = \input ->
+processPart1 : Parsed -> Result Str Str
+processPart1 = \input ->
     input
     |> List.map List.sum
     |> List.max
