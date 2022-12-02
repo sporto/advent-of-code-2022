@@ -3,9 +3,9 @@ interface Day01
         parse,
         process,
     ]
-    imports []
-
-Parser parsed : Str -> Result parsed Str
+    imports [
+        Common.{ Parser },
+    ]
 
 parse : Parser (List (List I32))
 parse = \input ->

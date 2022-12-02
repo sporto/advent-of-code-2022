@@ -8,6 +8,7 @@ app "advent"
         pf.File,
         pf.Path,
         Day01,
+        Common.{ Parser },
     ]
     provides [main] to pf
 
@@ -30,9 +31,6 @@ start : Task Str Str
 start =
     input <- readAndParse "day01/input" Day01.parse |> Task.await
     Day01.process input |> Task.fromResult
-
-
-Parser parsed : Str -> Result parsed Str
 
 
 readAndParse : Str, Parser parsed -> Task parsed Str
