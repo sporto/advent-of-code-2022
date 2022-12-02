@@ -1,7 +1,6 @@
 interface Common
     exposes [
         Parser,
-        # Definition,
         readAndParse,
     ]
     imports [
@@ -12,12 +11,10 @@ interface Common
 
 Parser parsed : Str -> Result parsed Str
 
-
 readAndParse : Str, Parser parsed -> Task parsed Str
 readAndParse = \filePath, parse ->
     content <- readFile filePath |> Task.await
     parse content |> Task.fromResult
-
 
 readFile : Str -> Task Str Str
 readFile = \filePath ->

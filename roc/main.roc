@@ -9,7 +9,6 @@ app "advent"
     ]
     provides [main] to pf
 
-
 main : Task {} []
 main =
     result <- Task.attempt start
@@ -21,8 +20,7 @@ main =
             {} <- Stdout.line resp |> Task.await
             Process.exit 0
 
-
 start : Task Str Str
 start =
-    Day01.part1
+    Day01.run
 
