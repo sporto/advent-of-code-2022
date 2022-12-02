@@ -10,20 +10,38 @@ app "advent"
     ]
     provides [main] to pf
 
+# https://www.roc-lang.org/builtins/Result
+# https://www.roc-lang.org/packages/basic-cli/Task
+
 main : Task {} []
 main =
-    path = Path.fromStr "day01/sample"
-    task =
-        contents <- File.readUtf8 path |> Task.await
-        Stdout.line "I read the file back. Its contents: \"\(contents)\""
+    result <- Task.attempt start
+    when result is
+        Err e ->
+            {} <- Stderr.line e |> Task.await
+            Process.exit 1
+        Ok resp ->
+            {} <- Stdout.line resp |> Task.await
+            Process.exit 0
 
+
+start : Task Str Str
+start =
+    content <- readFile "day01/sample" |> Task.await
+    parsed <- parseInput content |> Task.fromResult |> Task.await
+    Task.succeed parsed
+
+
+readFile : Str -> Task Str Str
+readFile = \filePath ->
+    task =
+        File.readUtf8 (Path.fromStr filePath)
     Task.attempt task \result ->
         when result is
-            Ok {} -> Stdout.line "Successfully wrote a string to out.txt"
-            Err err ->
-                msg =
-                    when err is
-                        _ -> "Uh oh, there was an error!"
+            Err _ -> Task.fail "Could not open \(filePath)"
+            Ok content -> Task.succeed content
 
-                {} <- Stderr.line msg |> Task.await
-                Process.exit 1
+
+parseInput: Str -> Result Str Str
+parseInput = \_content ->
+    Ok "parsed"
