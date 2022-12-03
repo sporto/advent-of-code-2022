@@ -16,6 +16,7 @@ main =
         Err e ->
             {} <- Stderr.line e |> Task.await
             Process.exit 1
+
         Ok resp ->
             {} <- Stdout.line resp |> Task.await
             Process.exit 0
@@ -23,4 +24,3 @@ main =
 start : Task Str Str
 start =
     Day02.run
-

@@ -20,6 +20,7 @@ readFile : Str -> Task Str Str
 readFile = \filePath ->
     task =
         File.readUtf8 (Path.fromStr filePath)
+
     Task.attempt task \result ->
         when result is
             Err _ -> Task.fail "Could not open \(filePath)"
