@@ -15,12 +15,17 @@ file =
 
 run : Task Str Str
 run =
-    part1 file
+    part2 file
 
 part1 : Str -> Task Str Str
 part1 = \f ->
     input <- Common.readAndParse f parse |> Task.await
     processPart1 input |> Task.fromResult
+
+part2 : Str -> Task Str Str
+part2 = \f ->
+    input <- Common.readAndParse f parsePart2 |> Task.await
+    processPart2 input |> Task.fromResult
 
 Parsed : List Rucksack
 
@@ -78,3 +83,53 @@ assignCharPriority = \char ->
         else char - 'A' + 27
     Num.toU64 code
 
+# ===
+
+parsePart2 : Common.Parser (List Str)
+parsePart2 = \input ->
+    Str.split input "\n" |> Ok
+
+processPart2 : List Str -> Result Str Str
+processPart2 = \sacks ->
+    sacks
+    |> Common.chunks 3
+    |> List.map processGroup
+    |> List.sum
+    |> Num.toStr
+    |> Ok
+
+# vJrwpWtwJgWrhcsFMMfFFhFp
+# jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+# PmmdzqPrVvPwwTWBwg
+# We need to find which char is in all three
+# And then count how many of those
+processGroup : List Str -> Nat
+processGroup = \group ->
+    # listOfDicts = group
+    #     |> List.map (\sack ->
+    #         sack
+    #         |> Str.graphemes
+    #         |> Common.countElements
+    #     )
+    dictAll =
+        group
+        |> Str.joinWith ""
+        |> Str.graphemes
+        |> Common.countElements
+    sets =
+        group
+        |> List.map Str.graphemes
+        |> List.map Set.fromList
+
+    when sets is
+        [ a, b, c ] ->
+            common = Set.intersection a b
+                |> Set.intersection c
+
+            when Set.toList common |> List.first is
+                Ok first ->
+                    Dict.get dictAll first |> Result.withDefault 0
+                Err _ -> 0
+        _ -> 0
+
+    
