@@ -37,26 +37,29 @@ doChunks : List a, Nat, List (List a) -> List (List a)
 doChunks = \remainder, chunkSize, acc ->
     when List.takeFirst remainder chunkSize is
         [] -> acc
-        taken -> doChunks
-            (List.drop remainder chunkSize)
-            chunkSize
-            (List.append acc taken)
+        taken ->
+            doChunks
+                (List.drop remainder chunkSize)
+                chunkSize
+                (List.append acc taken)
 
 countElements : List a -> Dict a Nat | a has Eq
 countElements = \list ->
     insert : Dict a Nat, a -> Dict a Nat
     insert = \acc, ele ->
-        Dict.update acc ele (\possibleValue ->
-            when possibleValue is
-                Missing -> Present 1
-                Present value -> Present (value + 1)
-        )
+        Dict.update
+            acc
+            ele
+            (\possibleValue ->
+                when possibleValue is
+                    Missing -> Present 1
+                    Present value -> Present (value + 1)
+            )
 
     List.walk list Dict.empty insert
 
 # expected =
 #     Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1
-
 # expect countElements (Str.graphemes "aba") == expected
 expect countElements (Str.graphemes "aba") == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)
 # expect countElements "aba" == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)

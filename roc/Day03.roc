@@ -1,21 +1,24 @@
 interface Day03
     exposes [
         run,
+        part1,
+        part2,
     ]
     imports [
         Common.{ Parser },
         pf.Task.{ Task },
     ]
 
-sample =
-    "day03/sample"
-
-file =
-    "day03/input"
-
 run : Task Str Str
 run =
-    part2 file
+    part2 "day03/sample"
+
+# part : Str -> Task Str Str
+# part = \file ->
+#     if 1 == 1 then
+#         part2 file
+#     else
+#         part1 file
 
 part1 : Str -> Task Str Str
 part1 = \f ->
@@ -68,20 +71,19 @@ findCommonChars = \rucksack ->
     |> Set.toList
     |> Str.joinWith ""
 
-assignPriority : Str -> U64
+assignPriority : Str -> Nat
 assignPriority = \chars ->
     chars
     |> Str.toScalars
     |> List.map assignCharPriority
     |> List.sum
-    
 
-assignCharPriority : U32 -> U64
+assignCharPriority : U32 -> Nat
 assignCharPriority = \char ->
     code = if char >= 'a'
         then char - 'a' + 1
         else char - 'A' + 27
-    Num.toU64 code
+    Num.toNat code
 
 # ===
 
@@ -91,8 +93,10 @@ parsePart2 = \input ->
 
 processPart2 : List Str -> Result Str Str
 processPart2 = \sacks ->
-    sacks
-    |> Common.chunks 3
+    groups = sacks
+        |> Common.chunks 3
+
+    groups
     |> List.map processGroup
     |> List.sum
     |> Num.toStr
@@ -105,17 +109,12 @@ processPart2 = \sacks ->
 # And then count how many of those
 processGroup : List Str -> Nat
 processGroup = \group ->
-    # listOfDicts = group
-    #     |> List.map (\sack ->
-    #         sack
-    #         |> Str.graphemes
-    #         |> Common.countElements
-    #     )
     dictAll =
         group
         |> Str.joinWith ""
         |> Str.graphemes
         |> Common.countElements
+
     sets =
         group
         |> List.map Str.graphemes
@@ -123,13 +122,9 @@ processGroup = \group ->
 
     when sets is
         [ a, b, c ] ->
-            common = Set.intersection a b
-                |> Set.intersection c
-
-            when Set.toList common |> List.first is
-                Ok first ->
-                    Dict.get dictAll first |> Result.withDefault 0
-                Err _ -> 0
+            Set.intersection a b
+            |> Set.intersection c
+            |> Set.toList
+            |> Str.joinWith ""
+            |> assignPriority
         _ -> 0
-
-    
