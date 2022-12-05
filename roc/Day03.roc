@@ -11,14 +11,7 @@ interface Day03
 
 run : Task Str Str
 run =
-    part2 "day03/sample"
-
-# part : Str -> Task Str Str
-# part = \file ->
-#     if 1 == 1 then
-#         part2 file
-#     else
-#         part1 file
+    part2 "day03/input"
 
 part1 : Str -> Task Str Str
 part1 = \f ->
@@ -109,12 +102,6 @@ processPart2 = \sacks ->
 # And then count how many of those
 processGroup : List Str -> Nat
 processGroup = \group ->
-    dictAll =
-        group
-        |> Str.joinWith ""
-        |> Str.graphemes
-        |> Common.countElements
-
     sets =
         group
         |> List.map Str.graphemes
