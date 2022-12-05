@@ -1,9 +1,10 @@
 interface Common
     exposes [
         Parser,
-        readAndParse,
+        boolToNum,
         chunks,
         countElements,
+        readAndParse,
     ]
     imports [
         pf.Task.{ Task },
@@ -27,6 +28,13 @@ readFile = \filePath ->
         when result is
             Err _ -> Task.fail "Could not open \(filePath)"
             Ok content -> Task.succeed content
+
+boolToNum : Bool -> Nat
+boolToNum = \bool ->
+    if bool then
+        1
+    else
+        0
 
 # https://github.com/elm-community/list-extra/blob/5a083cf0400260537adef75f96fbd48bfcedc7c0/src/List/Extra.elm#L2089
 chunks : List a, Nat -> List (List a)
