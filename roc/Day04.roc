@@ -11,12 +11,17 @@ interface Day04
 
 run : Task Str Str
 run =
-    part1 "day04/input"
+    part2 "day04/input"
 
 part1 : Str -> Task Str Str
 part1 = \f ->
     input <- Common.readAndParse f parse |> Task.await
     processPart1 input |> Task.fromResult
+
+part2 : Str -> Task Str Str
+part2 = \f ->
+    input <- Common.readAndParse f parse |> Task.await
+    processPart2 input |> Task.fromResult
 
 Ranges : {
     left : Range,
@@ -69,8 +74,6 @@ processPart1 = \pairs ->
     contains = pairs
         |> List.map fullyContains
 
-    # dbg contains
-
     contains
     |> List.countIf (\b -> b)
     |> Num.toStr
@@ -101,3 +104,21 @@ fullyContains = \ranges ->
 expandRange : Range -> List U8
 expandRange = \range ->
     List.range range.start (range.end + 1)
+
+processPart2 : Parsed -> Result Str Str
+processPart2 = \pairs ->
+    pairs
+    |> List.map overlaps
+    |> List.countIf (\b -> b)
+    |> Num.toStr
+    |> Ok
+
+overlaps : Ranges -> Bool
+overlaps = \ranges ->
+    leftList = expandRange ranges.left
+    rightList = expandRange ranges.right
+    leftSet = leftList |> Set.fromList
+    rightSet = rightList |> Set.fromList
+    intersection = Set.intersection leftSet rightSet
+    # dbg intersection
+    Set.len intersection > 0
