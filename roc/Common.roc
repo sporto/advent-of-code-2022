@@ -5,6 +5,8 @@ interface Common
         chunks,
         countElements,
         readAndParse,
+        replace,
+        walkWithIndex,
     ]
     imports [
         pf.Task.{ Task },
@@ -71,3 +73,18 @@ countElements = \list ->
 # expect countElements (Str.graphemes "aba") == expected
 expect countElements (Str.graphemes "aba") == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)
 # expect countElements "aba" == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)
+
+replace : Str, Str, Str -> Str
+replace = \word, target, replacement ->
+    when Str.replaceEach word target replacement is
+        Ok replaced -> replaced
+        Err _ -> word
+
+walkWithIndex : List elem, state, (state, elem, Nat -> state) -> state
+walkWithIndex = \list, state, fn ->
+    List.mapWithIndex list (\e, ix ->
+        {element: e, index: ix}
+    )
+    |> List.walk state (\acc, pair ->
+        fn acc pair.element pair.index
+    )
