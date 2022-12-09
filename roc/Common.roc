@@ -53,7 +53,7 @@ doChunks = \remainder, chunkSize, acc ->
                 chunkSize
                 (List.append acc taken)
 
-countElements : List a -> Dict a Nat | a has Eq
+countElements : List a -> Dict a Nat | a has Hash & Eq
 countElements = \list ->
     insert : Dict a Nat, a -> Dict a Nat
     insert = \acc, ele ->
@@ -68,11 +68,8 @@ countElements = \list ->
 
     List.walk list Dict.empty insert
 
-# expected =
-#     Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1
-# expect countElements (Str.graphemes "aba") == expected
-expect countElements (Str.graphemes "aba") == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)
-# expect countElements "aba" == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)
+
+# expect countElements (Str.graphemes "aba") == (Dict.empty |> Dict.insert "a" 2 |> Dict.insert "b" 1)
 
 replace : Str, Str, Str -> Str
 replace = \word, target, replacement ->

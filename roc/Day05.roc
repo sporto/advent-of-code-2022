@@ -11,7 +11,7 @@ interface Day05
 
 run : Task Str Str
 run =
-    part1 "day05/sample"
+    part1 "day05/input"
 
 part1 : Str -> Task Str Str
 part1 = \f ->
@@ -25,7 +25,7 @@ Parsed : {
 
 Stage: Dict Nat (List Str)
 
-Instruction : { move: U8, from: U8, to: U8 }
+Instruction : { move: Nat, from: Nat, to: Nat }
 
 parse : Common.Parser Parsed
 parse = \input ->
@@ -82,11 +82,15 @@ transposeToStacks = \input ->
     |> List.reverse
     |> Common.walkWithIndex Dict.empty (\acc, row, _ ->
         Common.walkWithIndex row acc (\innerAcc, char, charIndex ->
-            Dict.update innerAcc (charIndex + 1) (\possibleValue ->
-                when possibleValue is
-                    Missing -> Present [char]
-                    Present elems -> Present (List.append elems char)
-            )
+            when char is
+                "." ->
+                    innerAcc
+                _ ->
+                    Dict.update innerAcc (charIndex + 1) (\possibleValue ->
+                        when possibleValue is
+                            Missing -> Present [char]
+                            Present elems -> Present (List.append elems char)
+                    )
         )
     )
 
@@ -113,16 +117,49 @@ parseInstruction = \input ->
 processPart1 : Parsed -> Result Str Str
 processPart1 = \parsed ->
     # dbg parsed.start
-    parsed.instructions
-    |> List.walk parsed.start runInstruction
-    |> List.mapTry List.last
-    |> Str.joinWith ""
-    |> Ok
+    evaluated <- parsed.instructions
+        |> List.walkTry parsed.start runInstruction
+        |> Result.try
 
-parseNum : Str -> Result U8 Str
-parseNum = \input ->
-    Str.toU8 input |> Result.mapErr (\_ -> "Invalid \(input)")
+    # dbg evaluated
+    # Ok (printStage evaluated)
 
-runInstruction : Stage, Instruction -> Stage
-runInstruction = \stage, instruction ->
+    evaluated
+    |> Dict.values
+    |> List.mapTry (\l ->
+        List.last l
+        |> Result.mapErr (\_ -> "Empty")
+    )
+    |> Result.map (\r -> Str.joinWith r "")
+
+printStage : Stage -> Str
+printStage = \stage ->
     stage
+    |> Dict.values
+    |> List.map (\stack -> Str.joinWith stack "")
+    |> Str.joinWith "\n"
+
+parseNum : Str -> Result Nat Str
+parseNum = \input ->
+    Str.toNat input
+    |> Result.mapErr (\_ -> "Invalid \(input)")
+
+runInstruction : Stage, Instruction -> Result Stage Str
+runInstruction = \stage, ins ->
+    # dbg stage
+    originList <- Dict.get stage ins.from
+        |> Result.mapErr (\_ -> "Not found")
+        |> Result.try
+
+    targetList <- Dict.get stage ins.to
+        |> Result.mapErr (\_ -> "Not found")
+        |> Result.try
+
+    elementsToMove = originList |> List.takeLast ins.move |> List.reverse
+    nextOriginList = originList |> List.reverse |> List.drop ins.move |> List.reverse
+    nextTargetList = List.concat targetList elementsToMove
+
+    stage
+    |> Dict.insert ins.from nextOriginList
+    |> Dict.insert ins.to nextTargetList
+    |> Ok
