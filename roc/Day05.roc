@@ -112,13 +112,17 @@ parseInstruction = \input ->
 
 processPart1 : Parsed -> Result Str Str
 processPart1 = \parsed ->
-    dbg parsed.start
+    # dbg parsed.start
     parsed.instructions
-    |> List.map (\ins -> ins.to)
-    |> List.sum
-    |> Num.toStr
+    |> List.walk parsed.start runInstruction
+    |> List.mapTry List.last
+    |> Str.joinWith ""
     |> Ok
 
 parseNum : Str -> Result U8 Str
 parseNum = \input ->
     Str.toU8 input |> Result.mapErr (\_ -> "Invalid \(input)")
+
+runInstruction : Stage, Instruction -> Stage
+runInstruction = \stage, instruction ->
+    stage
