@@ -23,7 +23,7 @@ Parsed : {
     instructions: List Instruction
 }
 
-Stage: Dict U8 (List Str)
+Stage: Dict Nat (List Str)
 
 Instruction : { move: U8, from: U8, to: U8 }
 
@@ -76,10 +76,18 @@ parseStageRow = \input ->
 # ZN.
 # MCD
 # P..
-transposeToStacks : List (List Str) -> Dict U8 (List Str)
+transposeToStacks : List (List Str) -> Dict Nat (List Str)
 transposeToStacks = \input ->
-    Common.walkWithIndex input Dict.empty (\acc, elem, ix ->
-        acc
+    input
+    |> List.reverse
+    |> Common.walkWithIndex Dict.empty (\acc, row, _ ->
+        Common.walkWithIndex row acc (\innerAcc, char, charIndex ->
+            Dict.update innerAcc (charIndex + 1) (\possibleValue ->
+                when possibleValue is
+                    Missing -> Present [char]
+                    Present elems -> Present (List.append elems char)
+            )
+        )
     )
 
 parseInstructions : Str -> Result (List Instruction) Str
