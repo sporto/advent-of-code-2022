@@ -53,6 +53,13 @@ parseStage = \input ->
     |> List.mapTry parseStageRow
     |> Result.map transposeToStacks
 
+s1 =
+"""
+a
+"""
+
+expect (parseStage s1 |> Result.map printStage) == Err ""
+
 # [N] [C]    
 parseStageRow : Str -> Result (List Str) Str
 parseStageRow = \input ->
