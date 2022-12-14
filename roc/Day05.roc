@@ -11,12 +11,18 @@ interface Day05
 
 run : Task Str Str
 run =
-    part1 "day05/input"
+    part2 "day05/input"
 
 part1 : Str -> Task Str Str
 part1 = \f ->
     input <- Common.readAndParse f parse |> Task.await
     processPart1 input |> Task.fromResult
+
+part2 : Str -> Task Str Str
+part2 = \f ->
+    input <- Common.readAndParse f parse |> Task.await
+    processPart2 input |> Task.fromResult
+
 
 Parsed : {
     start: Stage,
@@ -140,6 +146,24 @@ processPart1 = \parsed ->
     )
     |> Result.map (\r -> Str.joinWith r "")
 
+processPart2 : Parsed -> Result Str Str
+processPart2 = \parsed ->
+    # dbg parsed.start
+    evaluated <- parsed.instructions
+        |> List.walkTry parsed.start runInstructionPart2
+        |> Result.try
+
+    # dbg evaluated
+    # Ok (printStage evaluated)
+
+    evaluated
+    |> Dict.values
+    |> List.mapTry (\l ->
+        List.last l
+        |> Result.mapErr (\_ -> "Empty")
+    )
+    |> Result.map (\r -> Str.joinWith r "")
+
 printStage : Stage -> Str
 printStage = \stage ->
     stage
@@ -164,6 +188,26 @@ runInstruction = \stage, ins ->
         |> Result.try
 
     elementsToMove = originList |> List.takeLast ins.move |> List.reverse
+    nextOriginList = originList |> List.reverse |> List.drop ins.move |> List.reverse
+    nextTargetList = List.concat targetList elementsToMove
+
+    stage
+    |> Dict.insert ins.from nextOriginList
+    |> Dict.insert ins.to nextTargetList
+    |> Ok
+
+runInstructionPart2 : Stage, Instruction -> Result Stage Str
+runInstructionPart2 = \stage, ins ->
+    # dbg stage
+    originList <- Dict.get stage ins.from
+        |> Result.mapErr (\_ -> "Not found")
+        |> Result.try
+
+    targetList <- Dict.get stage ins.to
+        |> Result.mapErr (\_ -> "Not found")
+        |> Result.try
+
+    elementsToMove = originList |> List.takeLast ins.move
     nextOriginList = originList |> List.reverse |> List.drop ins.move |> List.reverse
     nextTargetList = List.concat targetList elementsToMove
 
