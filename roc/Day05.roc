@@ -65,6 +65,7 @@ parseStageRow : Str -> Result (List Str) Str
 parseStageRow = \input ->
     input
     # 3 spaces means an empty space
+    |> Common.replace "    " " [.]"
     |> Common.replace "   " "[.]"
     # Remove all spaces
     |> Common.replace " " ""
