@@ -43,7 +43,7 @@ fn part1(input) {
 }
 
 fn process_part_1(stage: Stage, instructions: List(Instruction)) {
-  // io.debug(stage)
+  io.debug(stage)
 
   list.try_fold(
     over: instructions,
@@ -137,6 +137,7 @@ fn parse_stage(input: String) -> Result(Stage, String) {
 
 fn parse_stage_row(input: String) -> Result(List(String), String) {
   input
+  |> string.replace(each: "    ", with: " [.]")
   |> string.replace(each: "   ", with: "[.]")
   |> string.replace(each: " ", with: "")
   |> string.replace("[", "")
