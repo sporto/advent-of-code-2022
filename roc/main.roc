@@ -5,7 +5,7 @@ app "advent"
         pf.Stdout,
         pf.Stderr,
         pf.Task.{ Task },
-        Day05,
+        Day06,
     ]
     provides [main] to pf
 
@@ -23,4 +23,4 @@ main =
 
 start : Task Str Str
 start =
-    Day05.run
+    Day06.run

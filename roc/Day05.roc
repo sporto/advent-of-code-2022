@@ -59,12 +59,12 @@ parseStage = \input ->
     |> List.mapTry parseStageRow
     |> Result.map transposeToStacks
 
-s1 =
-"""
-a
-"""
+# s1 =
+# """
+# a
+# """
 
-expect (parseStage s1 |> Result.map printStage) == Err ""
+# expect (parseStage s1 |> Result.map printStage) == Err ""
 
 # [N] [C]    
 parseStageRow : Str -> Result (List Str) Str
@@ -164,12 +164,12 @@ processPart2 = \parsed ->
     )
     |> Result.map (\r -> Str.joinWith r "")
 
-printStage : Stage -> Str
-printStage = \stage ->
-    stage
-    |> Dict.values
-    |> List.map (\stack -> Str.joinWith stack "")
-    |> Str.joinWith "\n"
+# printStage : Stage -> Str
+# printStage = \stage ->
+#     stage
+#     |> Dict.values
+#     |> List.map (\stack -> Str.joinWith stack "")
+#     |> Str.joinWith "\n"
 
 parseNum : Str -> Result Nat Str
 parseNum = \input ->
