@@ -11,15 +11,25 @@ interface Day06
 
 run : Task Str Str
 run =
-    part1 "../data/day06/input"
+    part2 "../data/day06/input"
 
 part1 : Str -> Task Str Str
 part1 = \f ->
     input <- Common.readAndParse f parse |> Task.await
     processPart1 input |> Task.fromResult
 
+part2 : Str -> Task Str Str
+part2 = \f ->
+    input <- Common.readAndParse f parse |> Task.await
+    processPart2 input |> Task.fromResult
+
 processPart1 = \input ->
-    findMarker input
+    findMarker 4 input
+    |> Num.toStr
+    |> Ok
+
+processPart2 = \input ->
+    findMarker 14 input
     |> Num.toStr
     |> Ok
 
@@ -27,30 +37,45 @@ parse : Common.Parser Str
 parse = \input ->
     Ok input
 
-findMarker = \input ->
+findMarker = \size, input ->
     input
     |> Str.graphemes
-    |> doFindMaker []
+    |> doFindMaker [] size
 
-doFindMaker : List Str, List Str -> Nat
-doFindMaker = \remainder, collected ->
-    rest = List.drop remainder 4
+doFindMaker : List Str, List Str, Nat -> Nat
+doFindMaker = \remainder, collected, size ->
+    rest = List.drop remainder size
+    head = List.takeFirst remainder size
+    len = Set.fromList head |> Set.len
 
-    when remainder is
-    [a, b, c, d, ..] ->
-        len = Set.fromList [a, b, c, d] |> Set.len
-        if len == 4 then
-            List.len collected + 4
-        else
-            doFindMaker
-                (List.concat [b, c, d] rest)
-                (List.append collected a)
+    if len == size then
+        List.len collected + size
+    else
+        when head is
+            [a, ..] ->
+                restOfHead = List.drop head 1
+                doFindMaker
+                    (List.concat restOfHead rest)
+                    (List.append collected a)
+                    size
+            _ ->
+                0
 
-    _ -> 0
+
+#findMessageMarker
 
 
-expect findMarker "mjqjpqmgbljsphdztnvjfqwrcgsmlb" == 7
-expect findMarker "bvwbjplbgvbhsrlpgdmjqwftvncz" == 5
-expect findMarker "nppdvjthqldpwncqszvftbrmjlhg" == 6
-expect findMarker "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" == 10
-expect findMarker "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw" == 11
+expect findMarker 4 "mjqjpqmgbljsphdztnvjfqwrcgsmlb" == 7
+expect findMarker 4 "bvwbjplbgvbhsrlpgdmjqwftvncz" == 5
+expect findMarker 4 "nppdvjthqldpwncqszvftbrmjlhg" == 6
+expect findMarker 4 "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" == 10
+expect findMarker 4 "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw" == 11
+
+expect
+    actual = findMarker 14 "mjqjpqmgbljsphdztnvjfqwrcgsmlb"
+    actual == 19
+
+expect findMarker 14 "bvwbjplbgvbhsrlpgdmjqwftvncz" == 23
+expect findMarker 14 "nppdvjthqldpwncqszvftbrmjlhg" == 23
+expect findMarker 14 "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" == 29
+expect findMarker 14 "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw" == 26
