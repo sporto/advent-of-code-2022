@@ -3,6 +3,7 @@ interface Day07
         run,
         part1,
         # part2,
+        printFileSystem,
     ]
     imports [
         Common.{ Parser },
@@ -97,11 +98,15 @@ parseLsLine = \input ->
 processPart1 : List Command -> Result Str Str
 processPart1 = \input ->
     input
-    |> List.walk {fs: newFileSystem, currentPath: []} fillFileSystem
-    |> .fs
-    |> printFileSystem
-    # |> List.map commandToStr
-    # |> Str.joinWith "\n"
+    |> buildFileSystem
+    |> getDirectorySizes
+    |> Dict.toList
+    |> List.keepIf (\T path size ->
+            size <= 100000
+        )
+    |> List.map (\T path size -> size)
+    |> List.sum
+    |> Num.toStr
     |> Ok
 
 # Key is the path
@@ -110,6 +115,12 @@ FileSystem : Dict (List Str) (List LsLine) # (List {size :Nat , name :Str})
 newFileSystem : FileSystem
 newFileSystem =
     Dict.single [] []
+
+buildFileSystem : List Command -> FileSystem
+buildFileSystem = \commands ->
+    commands
+        |> List.walk {fs: newFileSystem, currentPath: []} fillFileSystem
+        |> .fs
 
 fillFileSystem : { fs: FileSystem, currentPath: List Str }, Command -> { fs: FileSystem, currentPath: List Str }
 fillFileSystem = \ { fs: fileSystem,  currentPath: currentPath }, command ->
@@ -164,6 +175,12 @@ getDirectorySubDirs = \content ->
                     Err "Not a dir"
         )
 
+
+getDirectorySizes : FileSystem -> Dict (List Str) Nat
+getDirectorySizes = \fileSystem ->
+    Dict.walk fileSystem Dict.empty (\state, path, _ ->
+        Dict.insert state path (getDirectorySize fileSystem path)
+    )
 
 getDirectorySize : FileSystem, List Str -> Nat
 getDirectorySize = \fileSystem, path ->
