@@ -140,14 +140,49 @@ fillFileSystem = \ { fs: fileSystem,  currentPath: currentPath }, command ->
 fillDirectory : FileSystem, List Str, List LsLine -> FileSystem
 fillDirectory = \fileSystem, currentPath, list ->
     Dict.insert fileSystem currentPath list
-    # List.walk list fileSystem (\fs, entry ->
-        # Dict.set fs currentPath en
-        # Dict.update fs currentPath (\possibleValue ->
-            # when possibleValue is
-            #     Missing -> Present list
-            #     Present existing -> Present (List.concat )
-        # )
-    # )
+
+getDirectory = \fileSystem, path ->
+    Dict.get fileSystem path
+
+getDirectoryFiles = \content ->
+    List.keepOks content
+        (\entry ->
+            when entry is
+                File size name ->
+                    Ok { size: size, name: name }
+                _ ->
+                    Err "Not a file"
+        )
+
+getDirectorySubDirs = \content ->
+    List.keepOks content
+        (\entry ->
+            when entry is
+                Dir name ->
+                    Ok name
+                _ ->
+                    Err "Not a dir"
+        )
+
+
+getDirectorySize : FileSystem, List Str -> Nat
+getDirectorySize = \fileSystem, path ->
+    when getDirectory fileSystem path is
+        Ok content ->
+            files = getDirectoryFiles content
+            filesSize = files
+                |> List.map .size
+                |> List.sum
+            subDirs = getDirectorySubDirs content
+            subDirSize = subDirs
+                |> List.map (\subDirName ->
+                    subDirPath = (List.append path subDirName)
+                    getDirectorySize fileSystem subDirPath
+                )
+                |> List.sum 
+            filesSize + subDirSize
+        Err _ ->
+            0
 
 printFileSystem : FileSystem -> Str
 printFileSystem = \fileSystem ->
@@ -157,12 +192,13 @@ printDirectory : List Str, FileSystem -> Str
 printDirectory = \path, fileSystem ->
     level = List.len path
     indentation = makeIndent level
-    when Dict.get fileSystem path is
+    when getDirectory fileSystem path is
         Ok content ->
             fullPath = Str.joinWith path "/"
             files = printDirectoryFiles (level + 1) content
             subDirs = printDirectorySubDirs path fileSystem content
-            "\(indentation)- /\(fullPath) (dir)\n\(files)\n\(subDirs)"
+            size = getDirectorySize fileSystem path |> Num.toStr
+            "\(indentation)- /\(fullPath) (dir) \(size)\n\(files)\n\(subDirs)"
         Err _ -> ""
 
 makeIndent : Nat -> Str
@@ -174,30 +210,18 @@ printDirectoryFiles : Nat, List LsLine -> Str
 printDirectoryFiles = \level, content ->
     indentation = makeIndent level
     content
-        |> List.keepOks (\entry ->
-            when entry is
-                File size name ->
-                    Ok { size: size, name: name }
-                _ ->
-                    Err "Not a file"
-        )
+        |> getDirectoryFiles
         |> List.map
             (\{size, name} ->
                 Str.concat
                     (makeIndent level)
                     "- \(name) (file)"
             )
-            |> Str.joinWith ("\n")
+            |> Str.joinWith "\n"
 
 printDirectorySubDirs = \containerPath, fileSystem, content ->
     content
-        |> List.keepOks (\entry ->
-            when entry is
-                Dir name ->
-                    Ok name
-                _ ->
-                    Err "Not a dir"
-            )
+        |> getDirectorySubDirs
         |> List.map (\subDirName ->
             subDirPath = (List.append containerPath subDirName)
             printDirectory subDirPath fileSystem
