@@ -12,7 +12,7 @@ interface Day07
 
 run : Task Str Str
 run =
-    part1 "../data/day07/sample"
+    part1 "../data/day07/input"
 
 part1 : Str -> Task Str Str
 part1 = \f ->
